@@ -1,0 +1,9 @@
+# vim: ft=sh
+mkdircd() {
+  mkdir $1 && cd $1
+}
+
+testing123testing() {
+  echo $0 && echo $1
+}
+

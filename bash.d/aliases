@@ -1,0 +1,8 @@
+# vim: ft=sh
+alias x='exa -a'
+alias xi='exa -a --icons'
+alias xf='exa -la --icons'
+alias xm='exa -a --sort=modified'
+alias xmf='exa -la --sort=modified'
+alias xmi='exa -la --sort=modified --icons'
+alias batp='bat --style-plain'

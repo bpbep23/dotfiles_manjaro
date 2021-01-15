@@ -7,6 +7,7 @@ export XDG_DATA_HOME=$HOME/.local/share
 export LESS_TERMCAP_md="${yellow}";
 export GOPATH=$HOME/code/go
 export GOBIN=$GOPATH/bin
+export BROWSER=/usr/bin/firefox
 
 source "$HOME/.cargo/env"
 
