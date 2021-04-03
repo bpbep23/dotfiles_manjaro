@@ -17,4 +17,9 @@ If you want to hawk the config, you'll have to peruse the source and figure it o
 
 ## RE: unsanitary commit practices
 
-Sorry. I am typically a good gitizen. 
+Sorry. I am typically a good gitizen.
+
+## Thanks
+
+To [yadm](https://github.com/TheLocehiliosan/yadm) for sparing me symlink headaches
+(why can't I ever remember the argument orders for ln? it's like there's a hole in my brain there)
