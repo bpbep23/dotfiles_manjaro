@@ -1,62 +1,464 @@
 " vim: foldmethod=marker
 " vimrc
-"General configration{{{
+"General configration
 filetype plugin indent on
+syntax on
 
 set termguicolors
 set ignorecase
 set clipboard=unnamedplus
-set hlsearch
-set laststatus=1
-set showtabline=0
+" set hlsearch
+set laststatus=0
+set showtabline=1
 set shiftwidth=2
 set tabstop=2
 set expandtab
 set numberwidth=3
-colorscheme darkblue
-"}}}
-" Mappings {{{
+set number
+set formatoptions-=o
+set formatoptions-=r
+set smartcase
+set magic
+set incsearch
+set grepprg=rg\ --vimgrep
+set autowrite
+set previewheight=5
+set signcolumn=number
+set tags+=./.tags
+set tags+=$HOME/code/tags
+set tags+=$HOME/code/.tags
+
+augroup vimrc-incsearch-highlight
+  autocmd!
+  autocmd CmdlineEnter /,\? :set hlsearch
+  autocmd CmdlineLeave /,\? :set nohlsearch
+augroup END
+
+" colorscheme hopscotch
+" colorscheme oceanic_material
+
+let c_comment_strings = 1
+let c_gnu = 1
+let c_syntax_for_h = 1
+
+" Mappings 
 inoremap jk <Esc>
 vnoremap jk <Esc>
 nnoremap H 0
 nnoremap L $
 
-let mapleader = ";"
+let mapleader = ';'
 
-nnoremap <silent> <leader>tcd :tcd "%:h"<CR>
-nnoremap <silent> <leader>wcd :lcd "%:h"<CR>
+nnoremap <silent> <leader>tcd :tchdir %:h<CR>
+nnoremap <silent> <leader>wcd :lcd %:h<CR>
 nnoremap <silent> <Tab> gt
 nnoremap <silent> <S-Tab> gT
 
 nnoremap <silent> <leader>ev :vsplit $HOME/.vimrc<CR>
-nnoremap <silent> <leader>sv :source $HOME/.vimrc<CR>
+nnoremap <silent> <leader>sv :source $MYVIMRC<CR>
 
-nnoremap <silent> <leader>bw :bwipeout<CR>
+nnoremap <silent> <leader>bw :bwipeout!<CR>
 
 function! ResetHLSearch()
   let &hlsearch=!&hlsearch
 endfunction
 
 nnoremap <expr> <leader>hc ResetHLSearch()
-"}}}
-"functions{{{
-if has("autocmd") && exists("+omnifunc")
+
+cnoremap <C-A> <Home>
+cnoremap <C-F> <Right>
+cnoremap <C-B> <Left>
+cnoremap <C-K> <End><C-U>
+
+tnoremap <Esc> <C-\><C-n>
+
+"functions
+if has('autocmd') && exists('+omnifunc')
   autocmd Filetype *
     \	if &omnifunc == "" |
     \		setlocal omnifunc=syntaxcomplete#Complete |
     \	endif
 endif
-"}}}
-"vim plug{{{
+
+
+function! Syn()
+  for id in synstack(line("."), col("."))
+    echo synIDattr(id, "name")
+  endfor
+endfunction
+command! -nargs=0 Hlg call Syn()
+
+"tabline 
+function MyTabLine()
+  let s = ''
+  for i in range(tabpagenr('$'))
+    " select the highlighting
+    if i + 1 == tabpagenr()
+      let s .= '%#TabLineSel#'
+    else
+      let s .= '%#TabLine#'
+    endif
+
+    " set the tab page number (for mouse clicks)
+    let s .= '%' . (i + 1) . 'T'
+
+    " the label is made by MyTabLabel()
+    let s .= ' %{MyTabLabel(' . (i + 1) . ')} '
+  endfor
+
+  " after the last tab fill with TabLineFill and reset tab page nr
+  let s .= '%#TabLineFill#%T'
+
+  " right-align the label to close the current tab page
+  if tabpagenr('$') > 1
+    let s .= '%=%#TabLine#%999Xclose'
+  endif
+
+  return s
+endfunction
+
+function MyTabLabel(n)
+  let buflist = tabpagebuflist(a:n)
+  let winnr = tabpagewinnr(a:n)
+  let bufname = bufname(buflist[winnr - 1])
+  return fnamemodify(bufname, ':t')
+endfunction
+
+set tabline=%!MyTabLine()
+
+set laststatus=0
+
+" unfucking the preview window
+function! CleanupPreviewWindow()
+  if &previewwindow 
+    setlocal statusline=[Preview][RO]
+    setlocal nonumber
+    setlocal signcolumn=no
+    call PreviewWindowFTDispatcher()
+  endif
+endfunction
+
+" setting ft on preview window based on source lang
+fun PreviewWindowFTDispatcher()
+  let originating_buf_ft = expand('#:e')
+  if originating_buf_ft ==? 'rs'
+    setlocal syntax=markdown 
+  elseif originating_buf_ft ==? 'py' 
+    setlocal syntax=rst 
+  endif
+endf
+
+augroup PreviewWindowShit
+  autocmd WinEnter * call CleanupPreviewWindow()
+augroup END
+
+"vim plug
 call plug#begin('~/.vim/plugged/')
   Plug 'ycm-core/YouCompleteMe', { 'frozen': 1 }
+  Plug 'dense-analysis/ale'
   Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
-  Plug 'junegunn/fzf', { 'dir': '/usr/share/vim/vimfiles/plugin/fzf.vim', 'do': './install --all' }
+  Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+  Plug 'junegunn/fzf.vim'
   Plug 'tpope/vim-fugitive'
   Plug 'tpope/vim-surround'
   Plug 'tpope/vim-commentary'
   Plug 'tpope/vim-unimpaired'
+  Plug 'rhysd/clever-f.vim'
+  Plug 'jiangmiao/auto-pairs'
+  Plug 'wellle/targets.vim'
+  Plug 'jeetsukumaran/vim-pythonsense'
+  " Plug 'romainl/vim-qf'
+  Plug 'Valloric/ListToggle'
+  if has('nvim')
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'} 
+  end
+
+  Plug 'rafi/awesome-vim-colorschemes'
+  Plug 'sainnhe/edge'
+  Plug 'humanoid-colors/vim-humanoid-colorscheme'
+  Plug 'kyazdani42/nvim-web-devicons'
+  Plug 'ryanoasis/vim-devicons'
+  " Plug 'glepnir/galaxyline.nvim'
+  " Plug 'vimpostor/vim-tpipeline'
+  Plug 'wincent/ferret'
+  Plug 'neovimhaskell/haskell-vim'
+  Plug 'cespare/vim-toml'
+  Plug 'rust-lang/rust.vim'
+  Plug 'marshallward/vim-restructuredtext'
+  " Plug 'gabrielelana/vim-markdown'
+  " Plug 'tpope/vim-markdown'
+  Plug 'elzr/vim-json'
+  Plug 'godlygeek/tabular'
+  Plug 'plasticboy/vim-markdown'
 call plug#end()
-"}}}
-"Plugin configuration{{{
-"}}}
+
+"Plugin configuration
+"fzf
+let g:fzf_command_prefix = 'Fzf'
+
+augroup fzf
+  autocmd!
+augroup END
+
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
+endfunction
+
+command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
+
+" An action can be a reference to a function that processes selected lines
+function! s:build_quickfix_list(lines)
+  call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
+  copen
+  cc
+endfunction
+
+let g:fzf_action = {
+  \ 'ctrl-q': function('s:build_quickfix_list'),
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
+command! -bang -complete=dir -nargs=* LS
+    \ call fzf#run(fzf#wrap({'source': 'ls', 'dir': <q-args>}, <bang>0))
+
+nnoremap <silent><leader>fzs :FzfSnippets<CR>
+nnoremap <silent><leader>fzm :FzfMaps<CR>
+nnoremap <silent><leader>fzM :FzfMarks<CR>
+nnoremap <silent><leader>fzb :FzfBuffers<CR>
+nnoremap <silent><leader>fzw :FzfWindows<CR>
+nnoremap <silent><leader>fzr :FzfRg<CR>
+nnoremap <silent><leader>fzg :FzfAg<CR>
+nnoremap <silent><leader>fzf :FzfFiles<CR>
+nnoremap <silent><leader>FZ :Fzf<CR>
+
+command! -bang FzfArgs call fzf#run(fzf#wrap('args',
+    \ {'source': map([argidx()]+(argidx()==0?[]:range(argc())[0:argidx()-1])+range(argc())[argidx()+1:], 'argv(v:val)')}, <bang>0))
+
+nnoremap <silent><leader>fza :FzfArgs<CR>
+
+function! s:fzf_neighbouring_files()
+  let current_file =expand('%')
+  let cwd = fnamemodify(current_file, ':p:h')
+  let command = 'ag -g "" -f ' . cwd . ' --depth 0'
+
+  call fzf#run({
+        \ 'source': command,
+        \ 'sink':   'e',
+        \ 'options': '-m -x +s',
+        \ 'window':  'enew' })
+endfunction
+
+command! FzfNeighbors call s:fzf_neighbouring_files()
+
+"" --column: Show column number
+" --line-number: Show line number
+" --no-heading: Do not show file headings in results
+" --fixed-strings: Search term as a literal string
+" --ignore-case: Case insensitive search
+" --no-ignore: Do not respect .gitignore, etc...
+" --hidden: Search hidden files and folders
+" --follow: Follow symlinks
+" --glob: Additional conditions for search (in this case ignore everything in the .git/ folder)
+
+" ripgrep command to search in multiple files
+autocmd fzf VimEnter * command! -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
+" ripgrep - ignore the files defined in ignore files (.gitignore...)
+autocmd fzf VimEnter * command! -nargs=* Rgi
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
+" ripgrep - ignore the files defined in ignore files (.gitignore...) and doesn't ignore case
+autocmd fzf VimEnter * command! -nargs=* Rgic
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --fixed-strings --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
+" ripgrep - ignore the files defined in ignore files (.gitignore...) and doesn't ignore case
+autocmd fzf VimEnter * command! -nargs=* Rgir
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
+" ripgrep - ignore the files defined in ignore files (.gitignore...) and doesn't ignore case and activate regex search
+autocmd fzf VimEnter * command! -nargs=* Rgr
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --hidden --no-ignore --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Statement'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'border':  ['fg', 'Ignore'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+
+" if has('nvim') && !exists('g:fzf_layout')
+"   autocmd! FileType fzf
+"   autocmd  FileType fzf set laststatus=0 noshowmode noruler
+"     \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+" endif
+" autocmd! FileType fzf set laststatus=0 noshowmode noruler
+"   \| autocmd BufLeave <buffer> set laststatus=0 showmode ruler
+
+"ultisnips
+let g:UltiSnipsExpandTrigger='<c-e>'
+let g:UltiSnipsJumpForwardTrigger='<c-f>'
+let g:UltiSnipsJumpBackwardTrigger='<c-b>'
+
+let g:ultisnips_python_style='google'
+
+"ycm 
+let g:ycm_language_server = []
+let g:ycm_language_server += [
+  \   {
+  \     'name': 'haskell-language-server',
+  \     'cmdline': [ 'haskell-language-server-wrapper', '--lsp' ],
+  \     'filetypes': [ 'haskell', 'lhaskell' ],
+  \     'project_root_files': [ 'stack.yaml', 'cabal.project', 'package.yaml', 'hie.yaml' ],
+  \   },
+  \ ]
+
+let g:ycm_seed_identifiers_with_syntax=1
+let g:ycm_use_ultisnips_completer=1
+let g:ycm_cache_omnifunc = 0
+let g:ycm_goto_buffer_command='split-or-existing-window'
+let g:ycm_clangd_uses_ycmd_caching = 0
+let g:ycm_clangd_binary_path = exepath('clangd')
+let g:ycm_open_loclist_on_ycm_diags=0
+let g:ycm_extra_conf_globlist = ['~/code/projects/*', '~/code/lab/c/*','!~/*']
+let g:ycm_enable_diagnostic_highlighting=0
+let g:ycm_enable_diagnostic_signs=0
+let g:ycm_show_diagnostics_ui=0
+let g:ycm_key_detailed_diagnostics = '<leader>yv'
+
+nnoremap <silent> <leader>yt :YcmCompleter GetType<CR>
+nnoremap <silent> <leader>K :YcmCompleter GetDoc<CR>
+nnoremap <silent> <leader>yd :YcmCompleter GoToDefinition<CR>
+nnoremap <silent> <leader>yD :YcmCompleter GoToDeclaration<CR>
+nnoremap <silent> <leader>ys :YcmCompleter GoToSymbol<CR>
+nnoremap <silent> <leader>yr :YcmCompleter GoToReferences<CR>
+nnoremap <silent> <leader>yl :YcmDiags<CR>
+
+
+"ale
+inoremap <silent> <C-x><C-A> <C-\><C-O>:ALEComplete<CR>
+nnoremap <silent> <leader>al :ALELint<CR>
+nnoremap <silent> <leader>ah :ALEHover<CR>
+nnoremap <silent> <leader>af :ALEFix<CR>
+nnoremap <silent> <leader>a] :ALENextWrap<CR>
+nnoremap <silent> <leader>a[ :ALEPreviousWrap<CR>
+nnoremap <silent> <leader>av :ALEDetail<CR>
+
+
+let g:ale_lint_on_save = 0
+let g:ale_sh_language_server_use_global = 1
+let g:ale_set_loclist = 0
+let g:ale_set_quickfix = 1
+let g:ale_set_signs=1
+let g:ale_set_highlights=0
+let g:ale_lint_on_enter = 0
+let g:ale_lint_on_filetype_changed = 0
+let g:ale_lint_on_insert_leave = 0
+let g:ale_lint_on_save = 0
+let g:ale_lint_on_text_changed = 0
+let g:ale_sign_highlight_linenrs=1
+let g:ale_sign_error=' ✗'
+let g:ale_sign_info=' ¡'
+let g:ale_sign_warning=' ?'
+" let g:ale_detail_to_floating_preview=1
+let g:ale_floating_preview=1
+" let g:ale_hover_to_floating_preview=1
+" let g:ale_floating_window_border=['│', '─', '╭', '╮', '╯', '╰']
+let g:ale_floating_window_border=[]
+
+let g:ale_completion_symbols = {
+      \ 'text': '',
+      \ 'method': '',
+      \ 'function': '',
+      \ 'constructor': '',
+      \ 'field': '',
+      \ 'variable': '',
+      \ 'class': '',
+      \ 'interface': '',
+      \ 'module': '',
+      \ 'property': '',
+      \ 'unit': 'unit',
+      \ 'value': 'val',
+      \ 'enum': '',
+      \ 'keyword': 'keyword',
+      \ 'snippet': '',
+      \ 'color': 'color',
+      \ 'file': '',
+      \ 'reference': 'ref',
+      \ 'folder': '',
+      \ 'enum member': '',
+      \ 'constant': '',
+      \ 'struct': '',
+      \ 'event': 'event',
+      \ 'operator': '',
+      \ 'type_parameter': 'type param',
+      \ '<default>': 'v'
+      \ }
+
+" tpipeline
+" set stl=%!tpipeline#stl#line()
+" let g:tpipeline_statusline = '%f'
+" let g:tpipeline_split = 1
+
+" ferret
+let g:FerretMap = 0
+let g:FerretQFMap = 0
+
+" colorscheme opts
+let g:materialbox_bold=1
+let g:materialbox_italic=1
+let g:materialbox_contrast_dark=1
+let g:materialbox_improved_warnings=1
+let g:materialbox_undercurl=1
+let g:materialbox_improved_strings=0
+
+" vim-markdown
+let g:vim_markdown_math=1
+let g:vim_markdown_new_list_item_indent = 2
+let g:vim_markdown_no_default_key_mappings = 1
+let g:vim_markdown_toc_autofit = 1
+let g:vim_markdown_follow_anchor = 1
+let g:vim_markdown_anchorexpr = "'<<'.v:anchor.'>>'"
+let g:vim_markdown_frontmatter = 1
+let g:vim_markdown_json_frontmatter = 1
+let g:vim_markdown_strikethrough = 1
+let g:vim_markdown_no_extensions_in_markdown = 1
+let g:vim_markdown_edit_url_in = 'tab'
+
+syntax on
+" colorscheme onedark
+colorscheme materialbox
+" colorscheme edge
