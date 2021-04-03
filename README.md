@@ -15,6 +15,6 @@ Pretty much all of the aliases and functions in the bash.d directory depend on t
 If you want to hawk the config, you'll have to peruse the source and figure it out on your own. Sorry dudes.
 
 
-## RE: Sloppy-ass commit names
+## RE: unsanitary commit practices
 
-Sorry. I am typically a good git citizen. 
+Sorry. I am typically a good gitizen. 
