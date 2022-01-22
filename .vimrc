@@ -59,7 +59,11 @@ nnoremap <silent> <S-Tab> gT
 nnoremap <silent> <leader>ev :vsplit $HOME/.vimrc<CR>
 nnoremap <silent> <leader>sv :source $MYVIMRC<CR>
 
-nnoremap <silent> <leader>bw :bwipeout!<CR>
+" bad practice; wipeouts clear marks and all that other good stuff.
+" i'll miss ya, buddy. my fingers will never forget you
+" nnoremap <silent> <leader>bw :bwipeout!<CR>
+nnoremap <silent> <leader>bx :bdelete!<CR>
+nnoremap <silent> <leader>bp :bprevious!<CR>
 
 function! ResetHLSearch()
   let &hlsearch=!&hlsearch
@@ -90,8 +94,8 @@ endif
 
 
 function! Syn()
-  for id in synstack(line("."), col("."))
-    echo synIDattr(id, "name")
+  for id in synstack(line('.'), col('.'))
+    echo synIDattr(id, 'name')
   endfor
 endfunction
 command! -nargs=0 Hlg call Syn()
@@ -161,7 +165,7 @@ augroup PreviewWindowShit
 augroup END
 
 fun GetSyntaxInfoUnderCursor()
-  echo synIDattr(synID(line("."), col("."), 1), "name")
+  echo synIDattr(synID(line('.'), col('.'), 1), 'name')
 endf
 
 command! -bang SynItemInfo call GetSyntaxInfoUnderCursor()
@@ -234,6 +238,7 @@ call plug#begin('~/.vim/plugged/')
 
   Plug 'KeitaNakamura/neodark.vim'
   Plug 'sainnhe/edge'
+  Plug 'nvim-neorg/neorg' | Plug 'nvim-lua/plenary.nvim'
 call plug#end()
 
 "Plugin configuration
@@ -480,6 +485,8 @@ let g:ale_fixers = {
 \   'css': ['prettier'],
 \}
 
+" let g:ale_vim_vimls_use_global=1
+
 " tpipeline
 " set stl=%!tpipeline#stl#line()
 " let g:tpipeline_statusline = '%f'
@@ -717,5 +724,5 @@ endfunction
 " set stl=%!MySTL()
 
 " NOTE: this method was recommended in 2017; think unnecessary?
-execute "set t_8f=\e[38;2;%lu;%lu;%lum"
-execute "set t_8b=\e[48;2;%lu;%lu;%lum"
+" execute "set t_8f=\e[38;2;%lu;%lu;%lum"
+" execute "set t_8b=\e[48;2;%lu;%lu;%lum"
