@@ -1,38 +1,40 @@
+#!/usr/bin/env bash
+
 # vim: ft=sh
 mkdircd() {
-  mkdir "$1" && cd "$1" || exit
+    mkdir "$1" && cd "$1" || exit
 }
 
 testing123testing() {
-  echo "$0" && echo "$1"
+    echo "$0" && echo "$1"
 }
 
 apps-propos() {
-  apropos --sections=1,1p "$1"
+    apropos --sections=1,1p "$1"
 }
 
 apropos-soft() {
-  apropos --sections=1,1p,4,5,6,7,8 "$1"
+    apropos --sections=1,1p,4,5,6,7,8 "$1"
 }
 
 apropos-dev() {
-  apropos --sections=0,2,3,3p "$1"
+    apropos --sections=0,2,3,3p "$1"
 }
 
 apropos-posix() {
-  apropos --sections=0,1p,2,3p "$1"
+    apropos --sections=0,1p,2,3p "$1"
 }
 
 apropos-misc() {
-  apropos --sections=4,5,6,7,8 "$1"
+    apropos --sections=4,5,6,7,8 "$1"
 }
 
 # fe [FUZZY PATTERN] - Open the selected file with the default editor
 #   - Bypass fuzzy finder if there's only one match (--select-1)
 #   - Exit if there's no match (--exit-0)
 fe() {
-  IFS=$'\n' files=($(fzf-tmux --query="$1" --multi --select-1 --exit-0))
-  [[ -n "$files" ]] && ${EDITOR:-nvim} "${files[@]}"
+    IFS=$'\n' files=($(fzf-tmux --query="$1" --multi --select-1 --exit-0))
+    [[ -n "$files" ]] && ${EDITOR:-nvim} "${files[@]}"
 }
 
 # Run command/application and choose paths/files with fzf.
@@ -48,80 +50,80 @@ fe() {
 # f vlc (hit enter, choose files)
 
 fx() {
-  # Store the arguments from fzf
-  IFS=$'\n' arguments=($(fzf --query="$2" --multi))
+    # Store the arguments from fzf
+    IFS=$'\n' arguments=($(fzf --query="$2" --multi))
 
-  # If no arguments passed (e.g. if Esc pressed), return to terminal
-  if [ -z "${arguments}" ]; then
-    return 1
-  fi
+    # If no arguments passed (e.g. if Esc pressed), return to terminal
+    if [ -z "${arguments}" ]; then
+        return 1
+    fi
 
-  # We want the command to show up in our bash history, so write the shell's
-  # active history to ~/.bash_history. Then we'll also add the command from
-  # fzf, then we'll load it all back into the shell's active history
-  history -w
+    # We want the command to show up in our bash history, so write the shell's
+    # active history to ~/.bash_history. Then we'll also add the command from
+    # fzf, then we'll load it all back into the shell's active history
+    history -w
 
-  # RUN THE COMMANDS ########################################################
-  # The cd command has no effect when run as background, and doesn't show up
-  # as a job the can be brought to the foreground. So we make sure not to add
-  # a '&' (more programs can be added separated by a '|')
-  if ! [[ $1 =~ ^(cd)$ ]]; then
-    $1 "${arguments[@]}" &
-  else
-    $1 "${arguments[@]}"
-  fi
+    # RUN THE COMMANDS ########################################################
+    # The cd command has no effect when run as background, and doesn't show up
+    # as a job the can be brought to the foreground. So we make sure not to add
+    # a '&' (more programs can be added separated by a '|')
+    if ! [[ $1 =~ ^(cd)$ ]]; then
+        $1 "${arguments[@]}" &
+    else
+        $1 "${arguments[@]}"
+    fi
 
-  # If the program is not on the list of GUIs (e.g. vim, cat, etc.) bring it
-  # to foreground so we can see the output. Also put cd on this list
-  # otherwise there will be errors)
-  if ! [[ $1 =~ ^(cd|zathura|vlc|eog|kolourpaint)$ ]]; then
-    fg %%
-  fi
+    # If the program is not on the list of GUIs (e.g. vim, cat, etc.) bring it
+    # to foreground so we can see the output. Also put cd on this list
+    # otherwise there will be errors)
+    if ! [[ $1 =~ ^(cd|zathura|vlc|eog|kolourpaint)$ ]]; then
+        fg %%
+    fi
 
-  # ADD A REPEATABLE COMMAND TO THE BASH HISTORY ############################
-  # Store the arguments in a temporary file for sanitising before being
-  # entered into bash history
-  : >/tmp/fzf_tmp
-  for file in ${arguments[@]}; do
-    echo $file >>/tmp/fzf_tmp
-  done
+    # ADD A REPEATABLE COMMAND TO THE BASH HISTORY ############################
+    # Store the arguments in a temporary file for sanitising before being
+    # entered into bash history
+    : >/tmp/fzf_tmp
+    for file in ${arguments[@]}; do
+        echo $file >>/tmp/fzf_tmp
+    done
 
-  # Put all input arguments on one line and sanitise the command such that
-  # spaces and parentheses are properly escaped. More sanitisation
-  # substitutions can be added if needed
-  sed -i 's/\n//g; s/ /\\ /g; s/(/\\(/; s/)/\\)/' /tmp/fzf_tmp
+    # Put all input arguments on one line and sanitise the command such that
+    # spaces and parentheses are properly escaped. More sanitisation
+    # substitutions can be added if needed
+    sed -i 's/\n//g; s/ /\\ /g; s/(/\\(/; s/)/\\)/' /tmp/fzf_tmp
 
-  # If the program is on the GUI list add a '&' to the command history
-  if [[ $1 =~ ^(zathura|vlc|eog|kolourpaint)$ ]]; then
-    sed -i '${s/$/ \&/}' /tmp/fzf_tmp
-  fi
+    # If the program is on the GUI list add a '&' to the command history
+    if [[ $1 =~ ^(zathura|vlc|eog|kolourpaint)$ ]]; then
+        sed -i '${s/$/ \&/}' /tmp/fzf_tmp
+    fi
 
-  # Grab the sanitised arguments
-  arguments=$(cat /tmp/fzf_tmp)
+    # Grab the sanitised arguments
+    arguments=$(cat /tmp/fzf_tmp)
 
-  # Add the command with the sanitised arguments to our .bash_history
-  echo ${1} ${arguments} >>~/.bash_history
+    # Add the command with the sanitised arguments to our .bash_history
+    echo ${1} ${arguments} >>~/.bash_history
 
-  # Reload the ~/.bash_history into the shell's active history
-  history -r
+    # Reload the ~/.bash_history into the shell's active history
+    history -r
 
-  # Clean up temporary variables
-  rm /tmp/fzf_tmp
+    # Clean up temporary variables
+    rm /tmp/fzf_tmp
 }
 
 # Copy selected path to clipboard
 pxcopy() {
-  path-extractor | fzf | read filename
-  [ -n "$filename" ] && echo -n "$filename" | xclip -selection
+    path-extractor | fzf | read filename
+    [ -n "$filename" ] && echo -n "$filename" | xclip -selection
 }
 
 fzf-all() {
-  locate '/' | fzf -m | paste -sd=' '
+    locate '/' | fzf -m | paste -sd=' '
 }
 
 fzbuku() {
     # save newline separated string into an array
-    mapfile -t website <<< "$(buku -p -f 5 | column -ts$'\t' | fzf --multi)"
+    mapfile -t website <<<"$(buku -p -f 5 | column -ts$'\t' | fzf --multi)"
 
     # open each website
     for i in "${website[@]}"; do
@@ -129,4 +131,137 @@ fzbuku() {
         buku -p "$index"
         buku -o "$index"
     done
+}
+
+gi() {
+    curl -sL https://www.toptal.com/developers/gitignore/api/"$@" && echo " "
+}
+
+define-word() {
+    sdcv -n --utf8-output --color "$@" 2>&1 | less -Rf
+}
+
+rga-fzf() {
+    RG_PREFIX="rga --files-with-matches"
+    local file
+    file="$(
+        FZF_DEFAULT_COMMAND="$RG_PREFIX '$1'" \
+            fzf --sort --preview="[[ ! -z {} ]] && rga --pretty --context 5 {q} {}" \
+            --phony -q "$1" \
+            --bind "change:reload:$RG_PREFIX {q}" \
+            --preview-window="70%:wrap"
+    )" &&
+        echo "opening $file" &&
+        xdg-open "$file"
+}
+
+step-on-the-scale() {
+    # Congratulations, golang. You are the fattest boy in camp.
+
+    target_dir="$1"
+
+    if [[ -z "$1" ]]; then
+        target_dir="$(pwd)"
+    fi
+
+    du -ah "$target_dir" | sort -h -k 1
+}
+
+pic-evicter() {
+    # move lost pictures to their appropriate folder
+    target_dir="$1"
+
+    if [[ -z "$1" ]]; then
+        target_dir="$(pwd)"
+    fi
+
+    fd -e png -e jpeg -e jpg -e webp -e webm -e gif . "$target_dir" -X mv {} \
+    "$HOME"/Pictures
+}
+
+findpics() {
+    query="$1"
+    target_dir="$2"
+    depth="$3"
+
+    if [[ -z "$1" ]]; then
+        query='.'
+    fi
+
+    if [[ -z "$2" ]]; then
+        target_dir="$(pwd)"
+    fi
+
+    if [[ -z "$3" ]]; then
+        depth='1'
+    fi
+
+    fd --hidden -e png -e jpg -e jpeg -e webm -e webp --max-depth "$depth" "$query" "$target_dir"
+}
+
+findbooks() {
+    query="$1"
+    target_dir="$2"
+    depth="$3"
+
+    if [[ -z "$1" ]]; then
+        query='.'
+    fi
+
+    if [[ -z "$2" ]]; then
+        target_dir="$(pwd)"
+    fi
+
+    if [[ -z "$3" ]]; then
+        depth='1'
+    fi
+
+    fd --hidden -e pdf -e epub -e mobi --max-depth "$depth" "$query" "$target_dir"
+}
+
+#FIXME
+# # Helper function to integrate yay and fzf
+# yzf() {
+#   pos=$1
+#   shift
+#   sed "s/ /\t/g" |
+#     fzf --nth=$pos --multi --history="${FZF_HISTDIR:-$XDG_STATE_HOME/fzf}/history-yzf$pos" \
+#       --preview-window=60%,border-left \
+#       --bind="double-click:execute(xdg-open 'https://archlinux.org/packages/{$pos}'),alt-enter:execute(xdg-open 'https://aur.archlinux.org/packages?K={$pos}&SB=p&SO=d&PP=100')" \
+#        "$@" | cut -f$pos | xargs
+# }
+
+# List installable packages into fzf and install selection
+# yas() {
+#   cache_dir="/tmp/yas-$USER"
+#   test "$1" = "-y" && rm -rf "$cache_dir" && shift
+#   mkdir -p "$cache_dir"
+#   preview_cache="$cache_dir/preview_{2}"
+#   list_cache="$cache_dir/list"
+#   { test "$(cat "$list_cache$@" | wc -l)" -lt 50000 && rm "$list_cache$@"; } 2>/dev/null
+#   pkg=$( (cat "$list_cache$@" 2>/dev/null || { pacman --color=always -Sl "$@"; yay --color=always -Sl aur "$@" } | sed 's/ [^ ]*unknown-version[^ ]*//' | tee "$list_cache$@") | yzf 2 --tiebreak=index --preview="cat $preview_cache 2>/dev/null | grep -v 'Querying' | grep . || yay --color always -Si {2} | tee $preview_cache")
+#   if test -n "$pkg"
+#     then echo "Installing $pkg..."
+#       cmd="yay -S $pkg"
+#       print -s "$cmd"
+#       eval "$cmd"
+#       rehash
+#   fi
+# }
+
+# # List installed packages into fzf and remove selection
+# # Tip: use -e to list only explicitly installed packages
+# yar() {
+#   pkg=$(yay --color=always -Q "$@" | yzf 1 --tiebreak=length --preview="yay --color always -Qli {1}")
+#   if test -n "$pkg"
+#     then echo "Removing $pkg..."
+#       cmd="yay -R --cascade --recursive $pkg"
+#       print -s "$cmd"
+#       eval "$cmd"
+#   fi
+# }
+
+fznpm() {
+  local script
+  script=$(cat package.json | jq -r '.scripts | keys[] ' | sort | fzf) && npm run $(echo "$script")
 }

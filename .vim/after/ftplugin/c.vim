@@ -14,5 +14,7 @@ setlocal comments=s1:/*,mb:*,ex:*/
 
 setlocal makeprg=gcc\ -Wall\ -Wextra\ -std=gnu99\ -Iinclude\ %\ $*
 
+set syntax=c
+
 " command -nargs=* CFileCompile :make CCompileDispatcher<f-args>
 

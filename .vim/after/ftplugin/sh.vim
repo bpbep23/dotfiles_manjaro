@@ -6,3 +6,4 @@ let b:ale_completion_enabled=1
 " let b:ale_fixers = {
 "       \ 'sh': ['shfmt', 'language_server'],
 "       \ }
+setlocal shiftwidth=4

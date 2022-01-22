@@ -230,3 +230,5 @@ export LESS_TERMCAP_us=$'\e[01;37m'    # begin underline
 export LESS_TERMCAP_ue=$'\e[0m'        # reset underline
 export LESS_TERMCAP_mr=$(tput rev)
 export LESS_TERMCAP_mh=$(tput dim)
+
+source "$HOME/bash.d/bin/fzf-marks"

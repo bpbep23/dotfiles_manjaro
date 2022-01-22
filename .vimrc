@@ -9,17 +9,22 @@ set ignorecase
 set clipboard=unnamedplus
 " set hlsearch
 set laststatus=0
-set showtabline=1
+set showtabline=0
 set shiftwidth=2
 set tabstop=2
 set expandtab
 set numberwidth=3
-set number
+set nonumber
 set formatoptions-=o
 set formatoptions-=r
 set smartcase
 set magic
 set incsearch
+
+" Do we want nosplit? New feature, try it out
+" set inccommand=nosplit
+set inccommand=nosplit
+
 set grepprg=rg\ --vimgrep
 set autowrite
 set previewheight=5
@@ -34,9 +39,6 @@ augroup vimrc-incsearch-highlight
   autocmd CmdlineLeave /,\? :set nohlsearch
 augroup END
 
-" colorscheme hopscotch
-" colorscheme oceanic_material
-
 let c_comment_strings = 1
 let c_gnu = 1
 let c_syntax_for_h = 1
@@ -44,7 +46,7 @@ let c_syntax_for_h = 1
 " Mappings 
 inoremap jk <Esc>
 vnoremap jk <Esc>
-nnoremap H 0
+nnoremap H ^
 nnoremap L $
 
 let mapleader = ';'
@@ -71,6 +73,12 @@ cnoremap <C-B> <Left>
 cnoremap <C-K> <End><C-U>
 
 tnoremap <Esc> <C-\><C-n>
+tnoremap jk    <C-\><C-n>
+tnoremap <C-W><C-h> <C-\><C-N><C-w>h
+tnoremap <C-W><C-j> <C-\><C-N><C-w>j
+tnoremap <C-W><C-k> <C-\><C-N><C-w>k
+tnoremap <C-W><C-l> <C-\><C-N><C-w>l
+
 
 "functions
 if has('autocmd') && exists('+omnifunc')
@@ -152,6 +160,14 @@ augroup PreviewWindowShit
   autocmd WinEnter * call CleanupPreviewWindow()
 augroup END
 
+fun GetSyntaxInfoUnderCursor()
+  echo synIDattr(synID(line("."), col("."), 1), "name")
+endf
+
+command! -bang SynItemInfo call GetSyntaxInfoUnderCursor()
+
+command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
+
 "vim plug
 call plug#begin('~/.vim/plugged/')
   Plug 'ycm-core/YouCompleteMe', { 'frozen': 1 }
@@ -178,7 +194,7 @@ call plug#begin('~/.vim/plugged/')
   Plug 'humanoid-colors/vim-humanoid-colorscheme'
   Plug 'kyazdani42/nvim-web-devicons'
   Plug 'ryanoasis/vim-devicons'
-  " Plug 'glepnir/galaxyline.nvim'
+  Plug 'nvim-lualine/lualine.nvim'
   " Plug 'vimpostor/vim-tpipeline'
   Plug 'wincent/ferret'
   Plug 'neovimhaskell/haskell-vim'
@@ -190,11 +206,39 @@ call plug#begin('~/.vim/plugged/')
   Plug 'elzr/vim-json'
   Plug 'godlygeek/tabular'
   Plug 'plasticboy/vim-markdown'
+  Plug 'chrisbra/csv.vim'
+  Plug 'preservim/tagbar'
+  " Plug 'ms-jpq/chadtree', {'branch': 'chad', 'do': 'python3 -m chadtree deps'}
+  Plug 'wadackel/vim-dogrun'
+  Plug 'cormacrelf/vim-colors-github'
+  Plug 'glepnir/zephyr-nvim'
+  Plug 'Rigellute/rigel'
+  Plug 'haishanh/night-owl.vim'
+  Plug 'azadkuh/vim-cmus'
+  Plug 'vim-python/python-syntax'
+  Plug 'tmhedberg/SimpylFold'
+  Plug 'Konfekt/FastFold'
+  Plug 'chrisbra/NrrwRgn'
+  Plug 'francoiscabrol/ranger.vim'
+  Plug 'rbgrouleff/bclose.vim'
+  Plug 'voldikss/vim-floaterm'
+  Plug 'pangloss/vim-javascript'
+  Plug 'HerringtonDarkholme/yats.vim'
+  Plug 'MaxMEllon/vim-jsx-pretty'
+  Plug 'machakann/vim-highlightedyank'
+  Plug 'beloglazov/vim-online-thesaurus'
+  Plug 'voldikss/fzf-floaterm'
+  Plug 'windwp/vim-floaterm-repl'
+
+  Plug 'udalov/kotlin-vim'
+
+  Plug 'KeitaNakamura/neodark.vim'
+  Plug 'sainnhe/edge'
 call plug#end()
 
 "Plugin configuration
 "fzf
-let g:fzf_command_prefix = 'Fzf'
+let g:fzf_command_prefix = 'Z'
 
 augroup fzf
   autocmd!
@@ -226,15 +270,15 @@ let g:fzf_action = {
 command! -bang -complete=dir -nargs=* LS
     \ call fzf#run(fzf#wrap({'source': 'ls', 'dir': <q-args>}, <bang>0))
 
-nnoremap <silent><leader>fzs :FzfSnippets<CR>
-nnoremap <silent><leader>fzm :FzfMaps<CR>
-nnoremap <silent><leader>fzM :FzfMarks<CR>
-nnoremap <silent><leader>fzb :FzfBuffers<CR>
-nnoremap <silent><leader>fzw :FzfWindows<CR>
-nnoremap <silent><leader>fzr :FzfRg<CR>
-nnoremap <silent><leader>fzg :FzfAg<CR>
-nnoremap <silent><leader>fzf :FzfFiles<CR>
-nnoremap <silent><leader>FZ :Fzf<CR>
+nnoremap <silent><leader>fzs :ZSnippets<CR>
+nnoremap <silent><leader>fzm :ZMaps<CR>
+nnoremap <silent><leader>fzM :ZMarks<CR>
+nnoremap <silent><leader>fzb :ZBuffers<CR>
+nnoremap <silent><leader>fzw :ZWindows<CR>
+nnoremap <silent><leader>fzr :ZRg<CR>
+nnoremap <silent><leader>fzg :ZAg<CR>
+nnoremap <silent><leader>fzf :ZFiles<CR>
+nnoremap <silent><leader>FZ :Z<CR>
 
 command! -bang FzfArgs call fzf#run(fzf#wrap('args',
     \ {'source': map([argidx()]+(argidx()==0?[]:range(argc())[0:argidx()-1])+range(argc())[argidx()+1:], 'argv(v:val)')}, <bang>0))
@@ -262,8 +306,7 @@ command! FzfNeighbors call s:fzf_neighbouring_files()
 " --ignore-case: Case insensitive search
 " --no-ignore: Do not respect .gitignore, etc...
 " --hidden: Search hidden files and folders
-" --follow: Follow symlinks
-" --glob: Additional conditions for search (in this case ignore everything in the .git/ folder)
+" --follow: Follow symlinks -glob: Additional conditions for search (in this case ignore everything in the .git/ folder)
 
 " ripgrep command to search in multiple files
 autocmd fzf VimEnter * command! -nargs=* Rg
@@ -314,11 +357,14 @@ let g:fzf_colors =
   \ 'hl+':     ['fg', 'Statement'],
   \ 'info':    ['fg', 'PreProc'],
   \ 'border':  ['fg', 'Ignore'],
-  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'prompt':  ['fg', 'Conditional', 'Comment'],
   \ 'pointer': ['fg', 'Exception'],
   \ 'marker':  ['fg', 'Keyword'],
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
+ 
+" anchor to bottom vs default?
+let g:fzf_layout = { 'window': { 'width': 0.91, 'height': 0.55, 'relative': v:false, 'yoffset': 1.0 } }
 
 " if has('nvim') && !exists('g:fzf_layout')
 "   autocmd! FileType fzf
@@ -333,7 +379,7 @@ let g:UltiSnipsExpandTrigger='<c-e>'
 let g:UltiSnipsJumpForwardTrigger='<c-f>'
 let g:UltiSnipsJumpBackwardTrigger='<c-b>'
 
-let g:ultisnips_python_style='google'
+let g:ultisnips_python_style='sphinx'
 
 "ycm 
 let g:ycm_language_server = []
@@ -393,11 +439,12 @@ let g:ale_sign_highlight_linenrs=1
 let g:ale_sign_error=' ✗'
 let g:ale_sign_info=' ¡'
 let g:ale_sign_warning=' ?'
-" let g:ale_detail_to_floating_preview=1
+let g:ale_detail_to_floating_preview=1
 let g:ale_floating_preview=1
-" let g:ale_hover_to_floating_preview=1
+let g:ale_hover_to_floating_preview=1
 " let g:ale_floating_window_border=['│', '─', '╭', '╮', '╯', '╰']
 let g:ale_floating_window_border=[]
+" let g:ale_linters_explicit = 1
 
 let g:ale_completion_symbols = {
       \ 'text': '',
@@ -428,6 +475,11 @@ let g:ale_completion_symbols = {
       \ '<default>': 'v'
       \ }
 
+let g:ale_fixers = {
+\   'javascript': ['prettier'],
+\   'css': ['prettier'],
+\}
+
 " tpipeline
 " set stl=%!tpipeline#stl#line()
 " let g:tpipeline_statusline = '%f'
@@ -435,7 +487,13 @@ let g:ale_completion_symbols = {
 
 " ferret
 let g:FerretMap = 0
-let g:FerretQFMap = 0
+let g:FerretQFMap=1
+nnoremap <leader>fa <Plug>(FerretAck)
+nnoremap <leader>fw :Ack <C-R><C-W><CR>
+nnoremap <leader>fl <Plug>(FerretLack)
+nnoremap <leader>fb :Back <C-R><C-W><CR>
+nnoremap <leader>fq <Plug>(FerretQuack)
+
 
 " colorscheme opts
 let g:materialbox_bold=1
@@ -448,7 +506,7 @@ let g:materialbox_improved_strings=0
 " vim-markdown
 let g:vim_markdown_math=1
 let g:vim_markdown_new_list_item_indent = 2
-let g:vim_markdown_no_default_key_mappings = 1
+let g:vim_markdown_no_default_key_mappings = 0
 let g:vim_markdown_toc_autofit = 1
 let g:vim_markdown_follow_anchor = 1
 let g:vim_markdown_anchorexpr = "'<<'.v:anchor.'>>'"
@@ -458,7 +516,206 @@ let g:vim_markdown_strikethrough = 1
 let g:vim_markdown_no_extensions_in_markdown = 1
 let g:vim_markdown_edit_url_in = 'tab'
 
+"tagbar
+nnoremap <silent> <leader>tb :TagbarToggle<CR>
+let g:tagbar_width=30
+
+" colorfag shit
+let g:github_colors_soft = 1
+
+let g:PaperColor_Theme_Options = {
+  \   'language': {
+  \     'python': {
+  \       'highlight_builtins' : 1
+  \     },
+  \     'cpp': {
+  \       'highlight_standard_library': 1
+  \     },
+  \     'c': {
+  \       'highlight_builtins' : 1
+  \     }
+  \   },
+  \   'theme': {
+  \     'default': {
+  \       'allow_bold': 1,
+  \       'alow_italic': 1,
+  \     }
+  \   }
+  \ }
+
+" py syntax
+let g:python_highlight_all = 1
+let g:python_highlight_indent_errors = 0
+let g:python_highlight_space_errors = 0
+
+" py folding
+let g:SimpylFold_docstring_preview = 1
+
+let g:markdown_folding = 1
+let g:tex_fold_enabled = 1
+let g:vimsyn_folding = 'af'
+let g:xml_syntax_folding = 1
+let g:javascript_fold = 1
+let g:sh_fold_enabled= 7
+let g:ruby_fold = 1
+let g:perl_fold = 1
+let g:perl_fold_blocks = 1
+let g:r_syntax_folding = 1
+let g:rust_fold = 1
+let g:php_folding = 1
+
+let g:fastfold_savehook = 0
+
+let g:ranger_replace_netrw = 1
+let g:ranger_map_keys = 0
+map <leader>R :Ranger<CR>
+
+let g:online_thesaurus_map_keys = 0
+
+let g:ale_html_prettier_options='--no-config --parser=html'
+" let g:ale_html_tidy_options='-i 2'
+
+let hs_highlight_boolean = 1
+let hs_highlight_delimiters = 1
+let hs_highlight_more_types = 1
+let hs_highlight_types = 1
+let g:haskell_enable_quantification = 1   " to enable highlighting of `forall`
+let g:haskell_enable_recursivedo = 1      " to enable highlighting of `mdo` and `rec`
+let g:haskell_enable_arrowsyntax = 1      " to enable highlighting of `proc`
+let g:haskell_enable_pattern_synonyms = 1 " to enable highlighting of `pattern`
+let g:haskell_enable_typeroles = 1        " to enable highlighting of type roles
+let g:haskell_enable_static_pointers = 1  " to enable highlighting of `static`
+let g:haskell_backpack = 1                " to enable highlighting of backpack keywords
+let g:haskell_indent_if = 3
+let g:haskell_indent_case = 2
+let g:haskell_indent_let = 4
+let g:haskell_indent_where = 6
+let g:haskell_indent_before_where = 2
+let g:haskell_indent_after_bare_where = 2
+let g:haskell_indent_do = 3
+let g:haskell_indent_in = 1
+let g:haskell_indent_guard = 2
+
+let g:gruvbox_contrast_dark='hard'
+let g:gruvbox_bold=0
+let g:gruvbox_improved_strings=1
+let g:gruvbox_improved_warnings=1 
+
+let g:sonokai_better_performance=1
+
+let g:materialbox_contrast_dark='high'
+let g:materialbox_improved_strings=1
+let g:onedark_terminal_italics=1
+let g:deus_contrast_dark='high'
+let g:deus_contrast_light='high'
+let g:deus_italic=1
+
+
+nnoremap <silent> ;FN :FloatermNew<CR>
+tnoremap <silent> ;FN <C-\><C-n>:FloatermNew<CR>
+nnoremap <silent> ;F[ :FloatermPrev<CR>
+tnoremap <silent> ;F[ <C-\><C-n>:FloatermPrev<CR>
+nnoremap <silent> ;F] :FloatermNext<CR>
+tnoremap <silent> ;F] <C-\><C-n>:FloatermNext<CR>
+nnoremap <silent> ;FT :FloatermToggle<CR>
+tnoremap <silent> ;F] <C-\><C-n>:FloatermToggle<CR>
+" nnoremap <silent> :FloatermNew --wintype=split python
+vnoremap <silent> ;FP :'<,'>FloatermNew --wintype=split ipython3
+nnoremap <silent> ;FP :FloatermNew --wintype=split ipython3
+
+command! FTZF FloatermNew fzf
+command! FTRipgrep FloatermNew -width=0.8 --height=0.8 rg
+command! FTRanger FloatermNew ranger
+command! FTPython FloatermNew python3
+command! FTIpython FloatermNew ipython3
+command! FTNode FloatermNew node
+
+"### COLORZZZZZZZ ###
+
 syntax on
-" colorscheme onedark
-colorscheme materialbox
+
+"" decent
 " colorscheme edge
+" colorscheme meta5
+" colorscheme rakr
+" colorscheme gruvbox
+" colorscheme stellarized
+" colorscheme purify
+" colorscheme rigel
+" colorscheme spacecamp_lite
+" colorscheme stellarized
+" colorscheme yellow-moon
+
+"" a+
+" colorscheme ayu
+" colorscheme deus
+" colorscheme sonokai
+" colorscheme PaperColor
+" colorscheme materialbox
+" colorscheme molokai
+" colorscheme molokayo
+" colorscheme sonokai
+" colorscheme one
+" colorscheme termschool
+" colorscheme oceanic_material
+" colorscheme onedark
+" colorscheme oceanic_material
+
+let g:oceanic_next_terminal_bold=1
+let g:oceanic_next_terminal_italic=1
+" colorscheme OceanicNext
+
+let g:neodark#italics=1
+let g:neodark#terminal_transparent=1
+let g:neodark#solid_vertsplit=1
+" colorscheme neodark
+
+let g:onedark_hide_endofbuffer=1
+let g:onedark_terminal_italics=1
+
+let g:edge_better_performance=1
+let g:edge_current_word='grey background'
+let g:edge_diagnostic_virtual_text='colored'
+let g:edge_diagnostic_line_highlight=1
+let g:edge_diagnostic_text_highlight=1
+" can be blue, green or purple
+let g:edge_menu_selection_background = 'purple'
+" TODO: play with this and see whacha like
+let g:edge_transparent_background = 0
+" let g:edge_style='aura'
+let g:edge_style='neon'
+let g:edge_enable_italic=0
+let g:edge_disable_italic_comment=0
+
+" colorscheme onedark
+colorscheme edge
+
+" ### END COLORFUL RICEFAGGOTRY ###
+
+function! MyBlankUp() abort
+  let cmd = 'put!=repeat(nr2char(10), v:count1)|silent +'
+  return cmd
+endfunction
+
+function! MyBlankDown() abort
+  let cmd = 'put =repeat(nr2char(10), v:count1)|silent -'
+  return cmd
+endfunction
+
+" function MySTL()
+"     if has("statusline")
+"         hi User1 term=standout ctermfg=0 ctermbg=11 guifg=Black guibg=Yellow
+"         let stl = ...
+"         if exists("*CSV_WCol")
+"             let csv = '%1*%{&ft=~"csv" ? CSV_WCol() : ""}%*'
+"         else
+"             let csv = ''
+"         endif
+"         return stl.csv
+"     endif
+" endfunc
+" set stl=%!MySTL()
+
+" NOTE: this method was recommended in 2017; think unnecessary?
+execute "set t_8f=\e[38;2;%lu;%lu;%lum"
+execute "set t_8b=\e[48;2;%lu;%lu;%lum"

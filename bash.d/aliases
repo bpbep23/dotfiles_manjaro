@@ -24,7 +24,7 @@ alias pacrm-wipeconfigs='sudo pacman -Rs --nosave'
 alias pacrm='sudo pacman -Rs'
 alias pacclean='sudo pacman -Sc'
 alias pacupdate='sudo pacman -Syu'
-alias aurupdaye='yay -Syu'
+alias aurupdate='yay -Syu'
 alias pacsearch='pacman -Ss'
 alias pacinstall='sudo pacman -S'
 alias pacfd-orphans='pacman --query --unrequired --deps --quiet'
@@ -32,3 +32,35 @@ alias pacfd-aliens='pacman --query --foreign'
 alias pacfd-outdated='pacman --query --upgrades'
 alias pacfd-xinstalled='pacman --query --explicit'
 alias pacfd-installed='pacman --query'
+
+alias kimg='kitty +kitten icat'
+alias kshell='kitty @'
+
+alias dailyforecast='curl wttr.in/Chicago'
+
+# NOTE: moved to its own script
+# alias kgrep='kitty +kitten hyperlinked_grep'
+
+alias g='git'
+alias gc='git clone'
+alias ba='buku --add'
+
+alias singlekitty='--listen-on=unix:/home/bpb/.config/kitty/ksock --single-instance --start-as=fullscreen --detach'
+
+alias vilynx='lynx -vikeys'
+alias vinfo='info --vi-keys'
+
+alias pcplay='playerctl play'
+alias pcpause='playerctl pause'
+alias pcprev='playerctl previous'
+alias pcnext='playerctl next'
+
+alias sr-graphical='sr -browser=/usr/bin/firefox'
+
+alias editpyfiles='fd --extension py --exclude "__*" --exclude "setup.py". bpblib -X nvim {}'
+
+alias ppt_runequity_cli='java -cp /home/bpb/code/PPTOddsOracle/ui_jar/p2.jar propokertools.cli.RunEquity'
+alias ppt_runpql_cli='java -cp /home/bpb/code/PPTOddsOracle/ui_jar/p2.jar propokertools.cli.RunPQL'
+alias ppt_pqlcsv='java -cp /home/bpb/code/PPTOddsOracle/ui_jar/p2.jar propokertools.cli.RunPQLCSV'
+alias ppt_pqlcsv_gentemplate='java -cp /home/bpb/code/PPTOddsOracle/ui_jar/p2.jar propokertools.cli.GenerateCSVTemplate'
+alias tmux_alacritty='TERM=screen-256color tmux'

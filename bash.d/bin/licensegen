@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+
+# pick a license using fzf
+
+licenselist() {
+
+    echo "1-) Apache License 2.0"
+    echo "2-) GNU General Public License v3.0"
+    echo "3-) MIT License"
+    echo "4-) BSD 2-Clause \"Simplified\" License"
+    echo "5-) BSD 3-Clause \"New\" or \"Revised\" License"
+    echo "6-) Eclipse Public License 2.0"
+    echo "7-) GNU Affero General Public License v3.0"
+    echo "8-) GNU General Public License v2.0"
+    echo "9-) GNU Lesser General Public License v2.1"
+    echo "10-) GNU Lesser General Public License v3.0"
+    echo "11-) Mozilla Public License 2.0"
+    echo "12-) The Unlicense"
+    echo "13-) Do What The Fuck You Want To Public License"
+}
+
+usage() {
+    echo "usage: git licensegen <license-name>"
+    echo
+    echo "Available commands are:"
+    echo "git licensegen -l | --list -- Print out all available licenses"
+    echo "git licensegen -s | --select -- License selection"
+    echo "git licensegen -h | --help"
+}
+
+selectlicense() {
+    
+    clear
+    licenselist
+    
+    echo "Exit: 0"
+
+    echo
+    echo "Select a license. Please input a number: "
+    echo
+    
+    read selectedlicense
+
+    clear
+    echo
+    licenselist
+    echo
+
+    echo > "$(pwd)/LICENSE.md"
+    case $selectedlicense in
+        "1")
+            cat "$HOME/code/licenses/apache-v2.md" >> "$(pwd)/LICENSE.md"
+            echo "Apache License 2.0 Generated"; exit 0
+            ;;
+        "2")
+            cat "$HOME/code/licenses/gpl-v3.md" >> "$(pwd)/LICENSE.md"
+            echo "GNU General Public License v3.0 Generated"; exit 0
+            ;;
+        "3")
+            cat "$HOME/code/licenses/mit.md" >> "$(pwd)/LICENSE.md"
+            echo "MIT License Generated"; exit 0
+            ;;
+        "4")
+            cat "$HOME/code/licenses/bsd-v2-clause.md" >> "$(pwd)/LICENSE.md"
+            echo "BSD 2-Clause \"Simplified\" License Generated"; exit 0
+            ;;
+        "5")
+            cat "$HOME/code/licenses/bsd-v3-clause.md" >> "$(pwd)/LICENSE.md"
+            echo "BSD 3-Clause \"New\" or \"Revised\" License"; exit 0
+            ;;
+        "6")
+            cat "$HOME/code/licenses/epl-v2.md" >> "$(pwd)/LICENSE.md"
+            echo "Eclipse Public License 2.0 Generated"; exit 0
+            ;;
+        "7")
+            cat "$HOME/code/licenses/agpl-v3.md" >> "$(pwd)/LICENSE.md"
+            echo "GNU Affero General Public License v3.0 Generated"; exit 0
+            ;;
+        "8")
+            cat "$HOME/code/licenses/gpl-v2.md" >> "$(pwd)/LICENSE.md"
+            echo "GNU General Public License v2.0 Generated"; exit 0
+            ;;
+        "9")
+            cat "$HOME/code/licenses/lgpl-v2-1.md" >> "$(pwd)/LICENSE.md"
+            echo "GNU Lesser General Public License v2.1 Generated"; exit 0
+            ;;
+        "10")
+            cat "$HOME/code/licenses/lgpl-v3.md" >> "$(pwd)/LICENSE.md"
+            echo "GNU Lesser General Public License v3.0 Generated"; exit 0
+            ;;
+        "11")
+            cat "$HOME/code/licenses/mpl-v2.md" >> "$(pwd)/LICENSE.md"
+            echo "Mozilla Public License 2.0 Generated"; exit 0
+            ;;
+        "12")
+            cat "$HOME/code/licenses/unlicense.md" >> "$(pwd)/LICENSE.md"
+            echo "The Unlicense Generated"; exit 0
+            ;;
+        "13")
+            cat "$HOME/code/licenses/wtfpl.md" >> "$(pwd)/LICENSE.md"
+            echo "Do What The Fuck You Want To Public License Generated"; exit 0
+            ;;
+    esac
+    
+}
+
+main() {
+    if [ "$#" -lt 1 ]; then
+        usage; exit 1
+    fi
+
+    local subcommand="$1"; shift
+
+    case $subcommand in
+        "-h"|"--help")
+            usage; exit 0
+            ;;
+        "-v"|"--version")
+            version; exit 0
+            ;;
+        "-l"|"--list")
+            licenselist; exit 0
+            ;;
+        "-s"|"--select")
+            selectlicense; exit 0
+            ;;
+    esac
+}
+
+main "$@"
